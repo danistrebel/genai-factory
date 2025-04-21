@@ -11,3 +11,17 @@ We welcome contributions of all kinds. To get started:
 We will review your pull request and provide feedback as soon as possible.
 
 Thank you for your contributions!
+
+## Hot Topics
+
+Current "hot tasks" include:
+
+- How to decouple code to setup the underlying infrastructure and the AI applications, given multiple applications should be able to reuse the same infrastructure, although each application has specific requirements (including services activation, networking, IAM and more).
+
+- Add model armor support to Fabric modules and here when avaialble
+
+- Add new AI apps
+
+- Create RAG infrastructure based on Cloud Run
+
+- Investigate agents

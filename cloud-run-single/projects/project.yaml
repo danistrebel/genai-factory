@@ -1,0 +1,11 @@
+---
+
+name: gf-srun-0
+
+services:
+  - artifactregistry.googleapis.com
+  - cloudbuild.googleapis.com
+  - run.googleapis.com
+
+service_accounts:
+  gfsrun0:
