@@ -38,4 +38,11 @@ terraform apply
 | [public_domains](variables.tf#L87) | The list of domains connected to the public load balancer. | <code>list&#40;string&#41;</code> |  | <code>&#91;&#34;example.com&#34;&#93;</code> |
 | [region](variables.tf#L94) | The GCP region where to deploy the resources. | <code>string</code> |  | <code>&#34;europe-west1&#34;</code> |
 | [service_invokers](variables.tf#L101) | The list of identities who can call the Cloud Run service. | <code>list&#40;string&#41;</code> |  | <code>&#91;&#93;</code> |
+
+## Outputs
+
+| name | description | sensitive |
+|---|---|:---:|
+| [commands](outputs.tf#L15) | Run the following commands when the deployment completes. |  |
+| [ip_address](outputs.tf#L20) | The load balancer IP address. |  |
 <!-- END TFDOC -->
