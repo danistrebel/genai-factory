@@ -1,11 +1,43 @@
 ---
 
-name: gf-srun-0
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: lptest003
 
 services:
+  - aiplatform.googleapis.com
   - artifactregistry.googleapis.com
   - cloudbuild.googleapis.com
   - run.googleapis.com
 
 service_accounts:
-  gfsrun0:
+  gf-srun-0:
+  gf-srun-build-0:
+
+iam:
+  roles/aiplatform.user:
+    - gf-srun-0
+  roles/cloudbuild.builds.editor:
+    - gf-srun-build-0
+  roles/storage.objectCreator:
+    - gf-srun-build-0
+  roles/storage.objectViewer:
+    - gf-srun-build-0
+  roles/artifactregistry.writer:
+    - gf-srun-build-0
+  roles/run.admin:
+    - gf-srun-build-0
+  roles/iam.serviceAccountUser:
+    - gf-srun-build-0

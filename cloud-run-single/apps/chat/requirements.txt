@@ -1,0 +1,4 @@
+Flask>=2.0
+google-auth>=2.0 # For ADC auth
+google-generativeai>=0.4.0 # Use the official Google AI Python SDK
+gunicorn>=20.0 # Production WSGI server for Cloud Run

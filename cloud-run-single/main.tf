@@ -146,7 +146,7 @@ module "cloud_run" {
   region          = var.region
   ingress         = var.cloud_run_configs.ingress
   containers      = var.cloud_run_configs.containers
-  service_account = module.projects.service_accounts["project/gfsrun0"].email
+  service_account = module.projects.service_accounts["project/gf-srun-0"].email
   iam = {
     "roles/run.invoker" = var.service_invokers
   }

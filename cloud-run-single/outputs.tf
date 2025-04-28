@@ -13,8 +13,15 @@
 # limitations under the License.
 
 output "commands" {
-  description = "Run the following commands when the deployment completes."
-  value       = "TBD"
+  description = "Run the following commands when the deployment completes to deploy the app."
+  value       = <<EOT
+  gcloud run deploy ${var.name} \
+    --source ./apps/chat \
+    --project ${local.project.project_id} \
+    --region ${var.region} \
+    --build-service-account ${module.projects.service_accounts["project/gf-srun-build-0"].id} \
+    --quiet
+  EOT
 }
 
 output "ip_address" {
