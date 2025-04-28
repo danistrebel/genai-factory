@@ -1,4 +1,5 @@
-Flask>=2.0
-google-auth>=2.0 # For ADC auth
-google-generativeai>=0.4.0 # Use the official Google AI Python SDK
-gunicorn>=20.0 # Production WSGI server for Cloud Run
+Flask>=2.0.0
+google-cloud-aiplatform>=1.38.1  # Check for the latest version
+gunicorn>=20.0.0                 # Production WSGI server
+protobuf>=3.19.5                 # Often needed by google-cloud libraries
+vertexai>=0.1.0                  # New unified Vertex AI SDK (includes language models)

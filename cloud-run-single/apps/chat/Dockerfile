@@ -12,23 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Use an official Python runtime as a parent image
-FROM python:3.11-slim
+# Use an official lightweight Python image.
+# https://hub.docker.com/_/python
+FROM python:3.10-slim
+
+# Allow statements and log messages to immediately appear in the Knative logs
+ENV PYTHONUNBUFFERED True
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the requirements file into the container at /app
+# Copy dependency files and install dependencies
 COPY requirements.txt .
-
-# Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code into the container at /app
+# Copy the rest of the application code
 COPY . .
 
-# Make port 8080 available to the world outside this container
+# Expose the port the app runs on (though Cloud Run uses the PORT env var)
 EXPOSE 8080
 
-# Run app.py when the container launches using gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "app:app"]
+# Set the default command to run the application using Gunicorn
+# Cloud Run injects the PORT environment variable.
+# Using exec form to make Gunicorn the main process (PID 1)
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 main:app

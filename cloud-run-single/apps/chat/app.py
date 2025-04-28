@@ -1,171 +1,159 @@
-# Copyright 2025 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-import logging
 import os
+import logging
+from flask import Flask, request, jsonify
 
-from flask import Flask, request, render_template_string, abort
+# Import the Vertex AI SDK - ADC is handled automatically!
+from google.cloud import aiplatform
+from google.protobuf import json_format
+from google.protobuf.struct_pb2 import Value
+import google.api_core.exceptions
 
-import google.auth
-import google.auth.exceptions
-import google.generativeai as genai
+from vertexai.generative_models import (
+    GenerationConfig,
+    GenerativeModel,
+    HarmBlockThreshold,
+    HarmCategory,
+    Image,
+    Part,
+    SafetySetting,
+)
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 
-# Model Name: default if not set in environment
-DEFAULT_MODEL_NAME = 'gemini-1.5-flash-latest'
-MODEL_NAME = os.environ.get('GEMINI_MODEL_NAME', DEFAULT_MODEL_NAME)
-logging.debug(f"Using Gemini Model: {MODEL_NAME}") # Log the model being used
-
-model = None
-initialization_error = None
-
-# ADC authentication
+# --- Configuration (read from environment variables) ---
 try:
-    SCOPES = [
-        'https://www.googleapis.com/auth/generative-language',
-        'https://www.googleapis.com/auth/cloud-platform'
-    ]
+    PROJECT_ID = os.environ['GOOGLE_CLOUD_PROJECT'] # Automatically set by Cloud Run
+    REGION = os.environ.get('VERTEX_AI_REGION', 'europe-west1') # Default if not set
+    # Example using a common text generation model.
+    # You might want to make this configurable via env var too.
+    MODEL_ENDPOINT_ID = os.environ.get('VERTEX_MODEL_ENDPOINT_ID', 'gemini-2.0-flash')
+    # If using a deployed Endpoint instead of a foundation model:
+    # ENDPOINT_ID = os.environ.get('VERTEX_ENDPOINT_ID') # e.g., projects/../endpoints/..
 
-    # Explicitly get credentials using ADC, requesting specific scopes
-    # This *might* influence subsequent implicit ADC lookups by google.generativeai
-    credentials, project_id = google.auth.default(scopes=SCOPES)
+except KeyError as e:
+    logging.error(f"Missing required environment variable: {e}")
+    # Handle missing configuration appropriately (e.g., exit or raise)
+    # For Cloud Run, GOOGLE_CLOUD_PROJECT is usually set automatically.
+    raise SystemExit(f"Environment variable {e} not set.")
 
-    logging.debug("Successfully obtained scoped ADC credentials.")
-    if project_id:
-         logging.debug(f"Project ID determined: {project_id}")
-
-except google.auth.exceptions.DefaultCredentialsError as e:
-    logging.error(f"FATAL: Could not get default credentials. "
-                  f"Ensure the Cloud Run service account exists and has permissions. Error: {e}", exc_info=True)
-    # Exit or prevent app from starting if auth fails fundamentally
-    raise SystemExit(f"Authentication failed: {e}")
-except Exception as e:
-    logging.error(f"FATAL: An unexpected error occurred during initialization: {e}", exc_info=True)
-    raise SystemExit(f"Initialization failed: {e}")
-
-# Init model
+# --- Initialize Vertex AI Client ---
+# ADC is used automatically by the client library when no credentials
+# are explicitly provided. It will use the Cloud Run service account.
 try:
-    model = genai.GenerativeModel(MODEL_NAME)
-    # Perform a simple test generation during init to catch auth/config issues early (optional)
-    # model.generate_content("test", generation_config=genai.types.GenerationConfig(candidate_count=1))
-    logging.debug(f"Successfully initialized Gemini model '{MODEL_NAME}'.")
+    logging.info(f"Initializing Vertex AI client for project={PROJECT_ID}, region={REGION}")
+    aiplatform.init(project=PROJECT_ID, location=REGION)
+    logging.info("Vertex AI client initialized successfully.")
+
+    # Prepare Vertex AI Endpoint reference (for prediction)
+    # Use this line if you are calling a specific *deployed* Endpoint resource
+    # endpoint = aiplatform.Endpoint(ENDPOINT_ID)
+
+    # Use this line if you are calling a *pre-trained model* directly (like PaLM/Gemini)
+    # Replace with appropriate class if using Gemini (e.g., GenerativeModel)
+    model = GenerativeModel(MODEL_ENDPOINT_ID)
+    logging.info(f"Loaded Vertex AI model: {MODEL_ENDPOINT_ID}")
 
 except Exception as e:
-    initialization_error = f"Error initializing Gemini model '{MODEL_NAME}': {e}. Check Service Account permissions (needs Vertex AI User role for ADC) or API key validity."
-    logging.error(initialization_error)
+    logging.error(f"Error initializing Vertex AI Client or loading model: {e}", exc_info=True)
+    # Decide how to handle this - maybe the app can't start
+    raise SystemExit(f"Failed to initialize Vertex AI: {e}")
 
-HTML_TEMPLATE = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Run Gemini Demo</title>
-    <style>
-        body { font-family: sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: auto; }
-        h1 { text-align: center; color: #333; }
-        form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-        textarea { padding: 10px; font-size: 1em; border: 1px solid #ccc; border-radius: 4px; min-height: 80px; }
-        button { padding: 10px 15px; font-size: 1em; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #45a049; }
-        .result { margin-top: 20px; padding: 15px; border: 1px solid #eee; background-color: #f9f9f9; border-radius: 4px; }
-        .result h2 { margin-top: 0; color: #555; }
-        .result pre { white-space: pre-wrap; word-wrap: break-word; background-color: #fff; padding: 10px; border: 1px solid #ddd; }
-        .error { color: red; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <h1>Ask Gemini (Model: {{ model_name }})</h1>
-    <form method="post">
-        <label for="prompt">Enter your prompt:</label>
-        <textarea id="prompt" name="prompt" required>{{ request.form.get('prompt', '') }}</textarea>
-        <button type="submit">Generate Response</button>
-    </form>
 
-    {% if error %}
-        <div class="result error">
-            <h2>Error</h2>
-            <p>{{ error }}</p>
-        </div>
-    {% endif %}
+# --- Flask Routes ---
+@app.route('/')
+def index():
+    """Basic health check / info endpoint."""
+    return jsonify({
+        "message": "Vertex AI ADC Sample App is running.",
+        "project_id": PROJECT_ID,
+        "region": REGION,
+        "model_endpoint_id": MODEL_ENDPOINT_ID
+    })
 
-    {% if response_text %}
-        <div class="result">
-            <h2>Gemini's Response:</h2>
-            <pre>{{ response_text }}</pre>
-        </div>
-         <hr>
-         <div class="result">
-            <h2>Original Prompt:</h2>
-            <pre>{{ original_prompt }}</pre>
-         </div>
-    {% endif %}
+@app.route('/predict', methods=['POST'])
+def predict():
+    """Endpoint to make a prediction using Vertex AI."""
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
 
-</body>
-</html>
-"""
+    data = request.get_json()
+    prompt = data.get('prompt')
 
-@app.route('/', methods=['GET', 'POST'])
-def home():
-    response_text = None
-    original_prompt = None
-    error_message = initialization_error # Use error from initialization if any
+    if not prompt:
+        return jsonify({"error": "Missing 'prompt' in request body"}), 400
 
-    if model is None and not error_message:
-        # This case should ideally be caught by initialization_error, but as a fallback:
-        error_message = "Gemini model is not available. Check server logs."
+    logging.info(f"Received prediction request with prompt: '{prompt[:50]}...'") # Log truncated prompt
 
-    if request.method == 'POST' and model:
-        original_prompt = request.form.get('prompt')
-        if not original_prompt:
-            error_message = "Please enter a prompt."
-        else:
-            try:
-                # --- Call Gemini API ---
-                logging.debug(f"Sending prompt to Gemini ({MODEL_NAME}): {original_prompt[:100]}...")
-                # Simple generation:
-                response = model.generate_content(original_prompt)
+    try:
+        # --- Call Vertex AI API ---
+        # Define parameters (adjust as needed)
+        parameters = GenerationConfig(
+            temperature=0.9,
+            top_p=1.0,
+            top_k=32,
+            candidate_count=1,
+            max_output_tokens=8192,
+        )
 
-                # More robust error checking from the response if needed:
-                # See: https://ai.google.dev/tutorials/python_quickstart#safety_settings
-                # if not response.candidates:
-                #    error_message = "No response generated. This might be due to safety settings or other issues."
-                #    # Potentially inspect response.prompt_feedback
-                # else:
-                #    response_text = response.text # Access text safely
+        # Make the prediction call using the loaded model
+        response = model.generate_content(prompt, generation_config=parameters)
 
-                response_text = response.text # Assuming simple success case for demo
-                logging.debug(f"Received response from Gemini ({MODEL_NAME}).")
+        # --- Process Response ---
+        prediction_text = response.text # Adapt based on the exact model/response structure
+        logging.info(f"Successfully received prediction from Vertex AI.")
 
-            except AttributeError as e:
-                 logging.error(f"Error processing Gemini response: {e}. Response object: {response}")
-                 error_message = f"Could not extract text from Gemini response. Check logs. Error: {e}"
-            except Exception as e:
-                # Catch other potential API errors (network, permissions, quota, invalid model, etc.)
-                logging.error(f"Error calling Gemini API: {e}")
-                error_message = f"An error occurred while contacting the Gemini API: {e}"
+        return jsonify({
+            "prompt": prompt,
+            "prediction": prediction_text
+        })
 
-    # Pass the actual model name used to the template
-    return render_template_string(
-        HTML_TEMPLATE,
-        model_name=MODEL_NAME,
-        response_text=response_text,
-        original_prompt=original_prompt,
-        error=error_message
-    )
+    # Example using a deployed Endpoint instead:
+    # try:
+    #     # --- Call Vertex AI API (Deployed Endpoint Example) ---
+    #     # Structure your instance based on your deployed model's expected input format
+    #     instances = [json_format.ParseDict({"prompt": prompt}, Value())]
+    #     parameters_dict = { # Optional parameters for the endpoint
+    #         "temperature": 0.2,
+    #         "maxOutputTokens": 256
+    #     }
+    #     parameters = json_format.ParseDict(parameters_dict, Value())
+
+    #     logging.info(f"Sending request to Vertex AI Endpoint: {endpoint.resource_name}")
+    #     response = endpoint.predict(instances=instances, parameters=parameters)
+    #     logging.info("Successfully received prediction from Vertex AI Endpoint.")
+
+    #     # --- Process Response (Endpoint Example) ---
+    #     # The response structure depends heavily on how your model outputs results.
+    #     # This is a generic example assuming a 'predictions' list with text content.
+    #     if response.predictions:
+    #         # You might need to parse the prediction content further
+    #         prediction_result = json_format.MessageToDict(response.predictions[0])
+    #         # Adjust the key based on your model's output signature
+    #         prediction_text = prediction_result.get('content', 'No content found')
+    #     else:
+    #         prediction_text = "No prediction returned from the endpoint."
+
+    #     return jsonify({
+    #         "prompt": prompt,
+    #         "prediction": prediction_text
+    #     })
+
+    except google.api_core.exceptions.GoogleAPIError as e:
+        logging.error(f"Vertex AI API call failed: {e}", exc_info=True)
+        # Provide more specific error details if possible
+        error_details = f"Vertex AI API error: {e.message} (Code: {e.code})"
+        status_code = e.code if isinstance(e.code, int) and 400 <= e.code < 600 else 500
+        return jsonify({"error": "Failed to get prediction from Vertex AI", "details": error_details}), status_code
+    except Exception as e:
+        logging.error(f"An unexpected error occurred during prediction: {e}", exc_info=True)
+        return jsonify({"error": "An internal server error occurred"}), 500
 
 if __name__ == '__main__':
+    # Get port from environment variable or default to 8080
     port = int(os.environ.get('PORT', 8080))
+    # Run development server (for local testing only)
+    # Use Gunicorn in Dockerfile for production
     app.run(debug=False, host='0.0.0.0', port=port)
