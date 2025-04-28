@@ -1,5 +1,6 @@
 import os
 import logging
+
 from flask import Flask, request, jsonify
 
 # Import the Vertex AI SDK - ADC is handled automatically!
@@ -26,10 +27,10 @@ app = Flask(__name__)
 # --- Configuration (read from environment variables) ---
 try:
     PROJECT_ID = os.environ['GOOGLE_CLOUD_PROJECT'] # Automatically set by Cloud Run
-    REGION = os.environ.get('VERTEX_AI_REGION', 'europe-west1') # Default if not set
+    REGION = os.environ.get('GOOGLE_CLOUD_LOCATION', 'europe-west1') # Default if not set
     # Example using a common text generation model.
     # You might want to make this configurable via env var too.
-    MODEL_ENDPOINT_ID = os.environ.get('VERTEX_MODEL_ENDPOINT_ID', 'gemini-2.0-flash')
+    MODEL_ENDPOINT_ID = os.environ.get('MODEL', 'gemini-2.0-flash')
     # If using a deployed Endpoint instead of a foundation model:
     # ENDPOINT_ID = os.environ.get('VERTEX_ENDPOINT_ID') # e.g., projects/../endpoints/..
 
@@ -109,37 +110,6 @@ def predict():
             "prompt": prompt,
             "prediction": prediction_text
         })
-
-    # Example using a deployed Endpoint instead:
-    # try:
-    #     # --- Call Vertex AI API (Deployed Endpoint Example) ---
-    #     # Structure your instance based on your deployed model's expected input format
-    #     instances = [json_format.ParseDict({"prompt": prompt}, Value())]
-    #     parameters_dict = { # Optional parameters for the endpoint
-    #         "temperature": 0.2,
-    #         "maxOutputTokens": 256
-    #     }
-    #     parameters = json_format.ParseDict(parameters_dict, Value())
-
-    #     logging.info(f"Sending request to Vertex AI Endpoint: {endpoint.resource_name}")
-    #     response = endpoint.predict(instances=instances, parameters=parameters)
-    #     logging.info("Successfully received prediction from Vertex AI Endpoint.")
-
-    #     # --- Process Response (Endpoint Example) ---
-    #     # The response structure depends heavily on how your model outputs results.
-    #     # This is a generic example assuming a 'predictions' list with text content.
-    #     if response.predictions:
-    #         # You might need to parse the prediction content further
-    #         prediction_result = json_format.MessageToDict(response.predictions[0])
-    #         # Adjust the key based on your model's output signature
-    #         prediction_text = prediction_result.get('content', 'No content found')
-    #     else:
-    #         prediction_text = "No prediction returned from the endpoint."
-
-    #     return jsonify({
-    #         "prompt": prompt,
-    #         "prediction": prediction_text
-    #     })
 
     except google.api_core.exceptions.GoogleAPIError as e:
         logging.error(f"Vertex AI API call failed: {e}", exc_info=True)

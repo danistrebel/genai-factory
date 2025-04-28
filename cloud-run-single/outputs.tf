@@ -15,8 +15,12 @@
 output "commands" {
   description = "Run the following commands when the deployment completes to deploy the app."
   value       = <<EOT
+  # Run the following commands to deploy the application.
+  # Alternatively, deploy the application through your CI/CD pipeline.
+
   gcloud run deploy ${var.name} \
     --source ./apps/chat \
+    --set-env-vars GOOGLE_CLOUD_PROJECT=${local.project.project_id},GOOGLE_CLOUD_LOCATION=${var.region} \
     --project ${local.project.project_id} \
     --region ${var.region} \
     --build-service-account ${module.projects.service_accounts["project/gf-srun-build-0"].id} \

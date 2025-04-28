@@ -20,7 +20,9 @@ services:
   - aiplatform.googleapis.com
   - artifactregistry.googleapis.com
   - cloudbuild.googleapis.com
+  - cloudresourcemanager.googleapis.com
   - run.googleapis.com
+  - serviceusage.googleapis.com
 
 service_accounts:
   gf-srun-0:
