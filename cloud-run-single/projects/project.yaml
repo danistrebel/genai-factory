@@ -29,8 +29,6 @@ service_accounts:
   gf-srun-build-0:
 
 iam:
-  roles/aiplatform.user:
-    - gf-srun-0
   roles/cloudbuild.builds.editor:
     - gf-srun-build-0
   roles/storage.objectCreator:
@@ -43,3 +41,7 @@ iam:
     - gf-srun-build-0
   roles/iam.serviceAccountUser:
     - gf-srun-build-0
+
+iam_bindings_additive:
+  - member: gf-srun-0
+    role: roles/aiplatform.user
