@@ -140,13 +140,14 @@ module "lb_external" {
 }
 
 module "cloud_run" {
-  source          = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/cloud-run-v2"
-  project_id      = local.project.project_id
-  name            = var.name
-  region          = var.region
-  ingress         = var.cloud_run_configs.ingress
-  containers      = var.cloud_run_configs.containers
-  service_account = module.projects.service_accounts["project/gf-srun-0"].email
+  source           = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/cloud-run-v2"
+  project_id       = local.project.project_id
+  name             = var.name
+  region           = var.region
+  ingress          = var.cloud_run_configs.ingress
+  containers       = var.cloud_run_configs.containers
+  service_account  = module.projects.service_accounts["project/gf-srun-0"].email
+  managed_revision = false
   iam = {
     "roles/run.invoker" = var.service_invokers
   }
