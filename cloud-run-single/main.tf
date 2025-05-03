@@ -149,7 +149,7 @@ module "cloud_run" {
   service_account  = module.projects.service_accounts["project/gf-srun-0"].email
   managed_revision = false
   iam = {
-    "roles/run.invoker" = var.service_invokers
+    "roles/run.invoker" = var.cloud_run_configs.service_invokers
   }
   revision = {
     gen2_execution_environment = true
@@ -168,5 +168,5 @@ module "cloud_run" {
       tags = var.cloud_run_configs.vpc_access_tags
     }
   }
-  deletion_protection = var.cloud_run_configs.deletion_protection
+  deletion_protection = var.enable_deletion_protection
 }

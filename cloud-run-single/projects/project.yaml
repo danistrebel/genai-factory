@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: gf-srun-0
+name: lptest003 # gf-rrag-0
 
 services:
   - aiplatform.googleapis.com
@@ -42,6 +42,8 @@ iam:
   roles/iam.serviceAccountUser:
     - gf-srun-build-0
 
+# roles/aiplatform.user is authoritatively granted
+# by aiplatform APIs when activated
 iam_bindings_additive:
   - member: gf-srun-0
     role: roles/aiplatform.user

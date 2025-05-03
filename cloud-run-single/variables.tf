@@ -27,14 +27,21 @@ variable "cloud_run_configs" {
         image = "us-docker.pkg.dev/cloudrun/container/hello"
       }
     })
-    deletion_protection = optional(bool, true)
-    ingress             = optional(string, "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER")
-    max_instance_count  = optional(number, 3)
-    vpc_access_egress   = optional(string, "ALL_TRAFFIC")
-    vpc_access_tags     = optional(list(string), [])
+    ingress            = optional(string, "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER")
+    max_instance_count = optional(number, 3)
+    service_invokers   = optional(list(string), [])
+    vpc_access_egress  = optional(string, "ALL_TRAFFIC")
+    vpc_access_tags    = optional(list(string), [])
   })
   nullable = false
   default  = {}
+}
+
+variable "enable_deletion_protection" {
+  description = "Whether deletion protection should be enabled."
+  type        = bool
+  nullable    = false
+  default     = true
 }
 
 variable "ip_address" {
@@ -46,6 +53,7 @@ variable "ip_address" {
 variable "name" {
   description = "The name of the resources. This is also the project suffix if a new project is created."
   type        = string
+  nullable    = false
   default     = "gf-srun-0"
 }
 
@@ -69,6 +77,7 @@ variable "project_config" {
     create             = optional(bool, true) # create and control project
     parent             = optional(string)     # if control equals true
   })
+  nullable = false
   validation {
     condition = (
       var.project_config.parent == null ||
@@ -96,11 +105,4 @@ variable "region" {
   description = "The GCP region where to deploy the resources."
   nullable    = false
   default     = "europe-west1"
-}
-
-variable "service_invokers" {
-  description = "The list of identities who can call the Cloud Run service."
-  type        = list(string)
-  nullable    = false
-  default     = []
 }
