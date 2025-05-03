@@ -1,0 +1,74 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+locals {
+  bigquery_id = replace(var.name, "-", "_")
+}
+module "bigquery-dataset" {
+  source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/bigquery-dataset"
+  project_id = local.project.project_id
+  id         = local.bigquery_id
+  tables = {
+    (local.bigquery_id) = {
+      friendly_name       = local.bigquery_id
+      deletion_protection = var.enable_deletion_protection
+    }
+  }
+}
+
+resource "google_compute_address" "cloudsql_address" {
+  name         = var.name
+  project      = local.project.project_id
+  address_type = "INTERNAL"
+  subnetwork   = local.subnet_id
+  region       = var.region
+}
+
+resource "google_compute_forwarding_rule" "cloudsql_psc_endpoint" {
+  name                  = var.name
+  project               = local.project.project_id
+  region                = var.region
+  target                = module.cloudsql.psc_service_attachment_link
+  load_balancing_scheme = ""
+  network               = local.vpc_id
+  ip_address            = google_compute_address.cloudsql_address.id
+}
+
+module "cloudsql" {
+  source                        = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/cloudsql-instance"
+  project_id                    = local.project.project_id
+  gcp_deletion_protection       = var.enable_deletion_protection
+  terraform_deletion_protection = var.enable_deletion_protection
+  name                          = var.name
+  region                        = var.region
+  availability_type             = var.db_configs.availability_type
+  database_version              = var.db_configs.database_version
+  tier                          = var.db_configs.tier
+  network_config = {
+    connectivity = {
+      psc_allowed_consumer_projects = [local.project.project_id]
+    }
+  }
+  databases = [
+    var.name
+  ]
+  users = {
+    (module.projects.service_accounts["project/gf-rrag-fe-0"].email) = {
+      type = "CLOUD_IAM_SERVICE_ACCOUNT"
+    }
+    (module.projects.service_accounts["project/gf-rrag-ing-0"].email) = {
+      type = "CLOUD_IAM_SERVICE_ACCOUNT"
+    }
+  }
+}

@@ -8,7 +8,8 @@ A collection of scripts to deploy AI infrastructures and applications in GCP, fo
 
 ## Applications
 
-- [Single Cloud Run](./cloud-run-single/README.md) - Deploy a single, secure public Cloud Run behind an external application load balancer and interact with Gemini.
+- [Single Cloud Run](./cloud-run-single/README.md) - A single, secure public Cloud Run behind an external application load balancer and interact with Gemini.
+- [RAG with Cloud Run](./cloud-run-single/README.md) - A "Retrieval-Augmented Generation" (RAG) system, leveraging Cloud Run, Vetex AI, Cloud SQL and BigQuery.
 
 ## Quick Start
 
