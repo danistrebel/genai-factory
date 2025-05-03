@@ -155,17 +155,10 @@ module "cloud_run" {
     gen2_execution_environment = true
     max_instance_count         = var.cloud_run_configs.max_instance_count
     vpc_access = {
-      egress = var.cloud_run_configs.vpc_access_egress
-      network = (var.networking_config.create
-        ? module.vpc[0].id
-        : var.networking_config.vpc_id
-      )
-      subnet = (
-        var.networking_config.create
-        ? module.vpc[0].subnet_ids["${var.region}/${var.networking_config.subnet_id}"]
-        : var.networking_config.subnet_id
-      )
-      tags = var.cloud_run_configs.vpc_access_tags
+      egress  = var.cloud_run_configs.vpc_access_egress
+      network = local.vpc_id
+      subnet  = local.subnet_id
+      tags    = var.cloud_run_configs.vpc_access_tags
     }
   }
   deletion_protection = var.enable_deletion_protection

@@ -12,6 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+locals {
+  subnet_id = (
+    var.networking_config.create
+    ? module.vpc[0].subnet_ids["${var.region}/${var.networking_config.subnet_id}"]
+    : var.networking_config.subnet_id
+  )
+  vpc_id = (
+    var.networking_config.create
+    ? module.vpc[0].id
+    : var.networking_config.vpc_id
+  )
+}
+
 module "vpc" {
   source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/net-vpc"
   count      = var.networking_config.create ? 1 : 0
