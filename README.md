@@ -88,6 +88,10 @@ networking_config = {
 }
 ```
 
+## Credits
+
+Thanks to the [Cloud Foundation Fabric](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric) community for ideas, inputs and useful tools.
+
 ## Contribute
 
 Contributions are welcome! You can follow the guidelines in the [Contributing section](./CONTRIBUTING.md).

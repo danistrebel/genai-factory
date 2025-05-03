@@ -12,6 +12,21 @@ We will review your pull request and provide feedback as soon as possible.
 
 Thank you for your contributions!
 
+## Useful Commands
+
+Create virtual envrionment for testing and generate docs
+
+```shell
+python3 -m venv ~/.venv-genai-factory
+source ~/.venv-genai-factory/bin/activate
+```
+
+Generate tfdoc (example for `cloud-run-single`)
+
+```shell
+./tools/tfdoc.py modules/cloud-run-single
+```
+
 ## Hot Topics
 
 Current "hot tasks" include:
@@ -22,6 +37,6 @@ Current "hot tasks" include:
 
 - Add new AI apps
 
-- Create RAG infrastructure based on Cloud Run
+- Create RAG infrastructure based on Cloud Run (WIP)
 
-- Investigate agents
+- Investigate/add agents
