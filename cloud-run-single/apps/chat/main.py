@@ -40,8 +40,8 @@ app = Flask(__name__)
 
 # --- Configuration (read from environment variables) ---
 try:
-    PROJECT_ID = os.environ['GOOGLE_CLOUD_PROJECT'] # Automatically set by Cloud Run
-    REGION = os.environ.get('GOOGLE_CLOUD_LOCATION', 'europe-west1') # Default if not set
+    PROJECT_ID = os.environ['PROJECT_ID'] # Automatically set by Cloud Run
+    REGION = os.environ.get('REGION', 'europe-west1') # Default if not set
     # Example using a common text generation model.
     # You might want to make this configurable via env var too.
     MODEL_ENDPOINT_ID = os.environ.get('MODEL', 'gemini-2.0-flash')

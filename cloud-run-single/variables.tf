@@ -23,7 +23,7 @@ variable "cloud_run_configs" {
   description = "The Cloud Run configurations."
   type = object({
     containers = optional(map(any), {
-      hello = {
+      ai = {
         image = "us-docker.pkg.dev/cloudrun/container/hello"
       }
     })
