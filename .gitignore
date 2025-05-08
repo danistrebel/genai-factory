@@ -207,7 +207,7 @@ pyrightconfig.json
 **/.terraform/*
 
 # Terraform lock files
-* .terraform.lock.hcl
+**/.terraform.lock.hcl
 
 # .tfstate files
 *.tfstate
