@@ -18,11 +18,15 @@ resource "google_compute_security_policy" "default" {
 
   dynamic "rule" {
     for_each = var.allowed_ip_ranges == null ? [] : [""]
+
     content {
-      action   = "allow"
-      priority = "100"
+      action      = "allow"
+      priority    = "100"
+      description = "Allowed IP ranges."
+
       match {
         versioned_expr = "SRC_IPS_V1"
+
         config {
           src_ip_ranges = var.allowed_ip_ranges
         }
@@ -31,15 +35,17 @@ resource "google_compute_security_policy" "default" {
   }
 
   rule {
-    action   = "deny(403)"
-    priority = "2147483647"
+    action      = "deny(403)"
+    priority    = "2147483647"
+    description = "Default deny rule."
+
     match {
       versioned_expr = "SRC_IPS_V1"
+
       config {
         src_ip_ranges = ["*"]
       }
     }
-    description = "default deny rule"
   }
 }
 
@@ -51,10 +57,11 @@ resource "google_compute_global_address" "address" {
 }
 
 module "lb_external_redirect" {
-  source              = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/net-lb-app-ext"
-  project_id          = local.project.project_id
-  name                = "${var.name}-redirect"
-  use_classic_version = false
+  source               = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/net-lb-app-ext"
+  project_id           = local.project.project_id
+  name                 = "${var.name}-redirect"
+  use_classic_version  = false
+  health_check_configs = {}
   forwarding_rules_config = {
     "" = {
       address = (
@@ -64,7 +71,6 @@ module "lb_external_redirect" {
       )
     }
   }
-  health_check_configs = {}
   urlmap_config = {
     description = "URL redirect for glb-test-0."
     default_url_redirect = {
@@ -75,11 +81,12 @@ module "lb_external_redirect" {
 }
 
 module "lb_external" {
-  source              = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/net-lb-app-ext"
-  project_id          = local.project.project_id
-  name                = var.name
-  use_classic_version = false
-  protocol            = "HTTPS"
+  source               = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/net-lb-app-ext"
+  project_id           = local.project.project_id
+  name                 = var.name
+  use_classic_version  = false
+  protocol             = "HTTPS"
+  health_check_configs = {}
   forwarding_rules_config = {
     "" = {
       address = (
@@ -99,7 +106,6 @@ module "lb_external" {
       security_policy = google_compute_security_policy.default.id
     }
   }
-  health_check_configs = {}
   neg_configs = {
     "${var.name}" = {
       cloudrun = {
@@ -120,14 +126,34 @@ module "lb_external" {
 }
 
 module "cloud_run_frontend" {
-  source           = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/cloud-run-v2"
-  project_id       = local.project.project_id
-  name             = "${var.name}-frontend"
-  region           = var.region
-  ingress          = var.cloud_run_configs.frontend.ingress
-  containers       = var.cloud_run_configs.frontend.containers
-  service_account  = module.projects.service_accounts["project/gf-rrag-fe-0"].email
-  managed_revision = false
+  source              = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/cloud-run-v2"
+  project_id          = local.project.project_id
+  name                = "${var.name}-frontend"
+  region              = var.region
+  ingress             = var.cloud_run_configs.frontend.ingress
+  service_account     = module.projects.service_accounts["project/gf-rrag-fe-0"].email
+  deletion_protection = var.enable_deletion_protection
+  managed_revision    = false
+  containers = merge({
+    cloud-sql-proxy = {
+      image   = "gcr.io/cloud-sql-connectors/cloud-sql-proxy"
+      command = ["/cloud-sql-proxy"]
+      args = [
+        module.dns_private_zone_cloudsql.domain,
+        "--address",
+        "0.0.0.0",
+        "--port",
+        "5432",
+        "--private-ip",
+        "--auto-iam-authn",
+        "--health-check",
+        "--structured-logs",
+        "--http-address",
+        "0.0.0.0"
+      ]
+    } },
+    var.cloud_run_configs.frontend.containers
+  )
   iam = {
     "roles/run.invoker" = var.cloud_run_configs.frontend.service_invokers
   }
@@ -148,5 +174,4 @@ module "cloud_run_frontend" {
       tags = var.cloud_run_configs.frontend.vpc_access_tags
     }
   }
-  deletion_protection = var.enable_deletion_protection
 }

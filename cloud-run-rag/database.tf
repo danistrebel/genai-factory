@@ -15,6 +15,7 @@
 locals {
   bigquery_id = replace(var.name, "-", "_")
 }
+
 module "bigquery-dataset" {
   source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/bigquery-dataset"
   project_id = local.project.project_id
@@ -24,6 +25,22 @@ module "bigquery-dataset" {
       friendly_name       = local.bigquery_id
       deletion_protection = var.enable_deletion_protection
     }
+  }
+}
+
+module "dns_private_zone_cloudsql" {
+  source        = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/dns"
+  project_id    = local.project.project_id
+  name          = "${var.name}-cloudsql"
+  force_destroy = !var.enable_deletion_protection
+  zone_config = {
+    domain = module.cloudsql.dns_name
+    private = {
+      client_networks = [local.vpc_id]
+    }
+  }
+  recordsets = {
+    ("A ${module.cloudsql.dns_name}") = { records = [google_compute_address.cloudsql_address.address] }
   }
 }
 
@@ -55,6 +72,7 @@ module "cloudsql" {
   availability_type             = var.db_configs.availability_type
   database_version              = var.db_configs.database_version
   tier                          = var.db_configs.tier
+  flags                         = var.db_configs.flags
   network_config = {
     connectivity = {
       psc_allowed_consumer_projects = [local.project.project_id]

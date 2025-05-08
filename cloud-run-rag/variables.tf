@@ -24,7 +24,7 @@ variable "cloud_run_configs" {
   type = object({
     frontend = object({
       containers = optional(map(any), {
-        hello = {
+        frontend = {
           image = "us-docker.pkg.dev/cloudrun/container/hello"
         }
       })
@@ -37,7 +37,7 @@ variable "cloud_run_configs" {
     })
     ingestion = object({
       containers = optional(map(any), {
-        hello = {
+        ingestion = {
           image = "us-docker.pkg.dev/cloudrun/container/hello"
         }
       })
@@ -61,6 +61,7 @@ variable "db_configs" {
   type = object({
     availability_type = optional(string, "REGIONAL")
     database_version  = optional(string, "POSTGRES_14")
+    flags             = optional(map(string), { "cloudsql.iam_authentication" = "on" })
     tier              = optional(string, "db-f1-micro")
   })
   nullable = false

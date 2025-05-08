@@ -39,28 +39,15 @@ module "vpc" {
   ]
 }
 
-# DNS zone and policies for Google APIs
-
-module "dns_priv_googleapis" {
-  source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/dns"
-  count      = var.networking_config.create ? 1 : 0
-  project_id = local.project.project_id
-  name       = "googleapis-com"
-  zone_config = {
-    domain = "googleapis.com."
-    private = {
-      client_networks = [module.vpc[0].id]
-    }
-  }
-}
+# DNS policies for Google APIs
 
 module "dns_policy_googleapis" {
   source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/dns-response-policy"
   count      = var.networking_config.create ? 1 : 0
   project_id = local.project.project_id
   name       = "googleapis"
+  networks   = { "${var.name}" = local.vpc_id }
   factories_config = {
     rules = "./data/dns-policy-rules.yaml"
   }
-  networks = { "${var.name}" = module.vpc[0].id }
 }

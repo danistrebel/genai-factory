@@ -12,6 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+locals {
+  _env_vars_frontend = [
+    "DB_NAME=${var.name}",
+    "DB_SA=${module.projects.service_accounts["project/gf-rrag-fe-0"].service_account.account_id}",
+    "DB_TABLE=${var.name}",
+    "PROJECT_ID=${local.project.project_id}",
+    "REGION=${var.region}"
+  ]
+  _env_vars_ingestion = [
+    "BQ_DATASET=${local.bigquery_id}",
+    "BQ_TABLE=${local.bigquery_id}",
+    "DB_NAME=${var.name}",
+    "DB_SA=${module.projects.service_accounts["project/gf-rrag-ing-0"].service_account.account_id}",
+    "DB_TABLE=${var.name}",
+    "PROJECT_ID=${local.project.project_id}",
+    "REGION=${var.region}"
+  ]
+  env_vars_frontend  = join(",", local._env_vars_frontend)
+  env_vars_ingestion = join(",", local._env_vars_ingestion)
+}
+
 output "commands" {
   description = "Run the following commands when the deployment completes to deploy the app."
   value       = <<EOT
@@ -26,23 +47,36 @@ output "commands" {
     ${local.project.project_id}:${local.bigquery_id}.${local.bigquery_id} \
     ./data/top-100-imdb-movies.csv
 
+  gcloud artifacts repositories create ${var.name} \
+    --project=${local.project.project_id} \
+    --location ${var.region} \
+    --repository-format docker
+
   # Ingestion Cloud Run
-  gcloud run deploy ${var.name}-ingestion \
-    --source ./apps/rag/ingestion \
-    --set-env-vars DB_INSTANCE_NAME=xxx,GOOGLE_CLOUD_PROJECT=${local.project.project_id},GOOGLE_CLOUD_LOCATION=${var.region} \
+  gcloud builds submit ./apps/rag/ingestion \
     --project ${local.project.project_id} \
-    --region ${var.region} \
-    --build-service-account ${module.projects.service_accounts["project/gf-rrag-ing-build-0"].id} \
+    --pack image=${var.region}-docker.pkg.dev/${local.project.project_id}/cloud-run-source-deploy/ingestion \
     --quiet
 
-  # Frontend Cloud Run
-  gcloud run deploy ${var.name}-frontend \
-    --source ./apps/rag/frontend \
-    --set-env-vars GOOGLE_CLOUD_PROJECT=${local.project.project_id},GOOGLE_CLOUD_LOCATION=${var.region} \
+  gcloud run jobs deploy ${var.name}-ingestion \
     --project ${local.project.project_id} \
     --region ${var.region} \
-    --build-service-account ${module.projects.service_accounts["project/gf-rrag-fe-build-0"].id} \
+    --container=ingestion \
+    --image=${var.region}-docker.pkg.dev/${local.project.project_id}/cloud-run-source-deploy/ingestion \
+    --set-env-vars ${local.env_vars_ingestion}
+
+  # Frontend Cloud Run
+  gcloud builds submit ./apps/rag/frontend \
+    --project ${local.project.project_id} \
+    --pack image=${var.region}-docker.pkg.dev/${local.project.project_id}/cloud-run-source-deploy/frontend \
     --quiet
+
+  gcloud run jobs deploy ${var.name}-frontend \
+    --project ${local.project.project_id} \
+    --region ${var.region} \
+    --container=frontend \
+    --image=${var.region}-docker.pkg.dev/${local.project.project_id}/cloud-run-source-deploy/frontend \
+    --set-env-vars ${local.env_vars_frontend}
   EOT
 }
 

@@ -24,7 +24,6 @@ services:
   - cloudresourcemanager.googleapis.com
   - cloudscheduler.googleapis.com
   - run.googleapis.com
-  - secretmanager.googleapis.com
   - sqladmin.googleapis.com
 
 service_accounts:
@@ -40,6 +39,12 @@ iam:
   roles/cloudbuild.builds.editor:
     - gf-rrag-fe-build-0
     - gf-rrag-ing-build-0
+  roles/cloudsql.client:
+    - gf-rrag-fe-0
+    - gf-rrag-ing-0
+  roles/cloudsql.instanceUser:
+    - gf-rrag-fe-0
+    - gf-rrag-ing-0
   roles/storage.objectCreator:
     - gf-rrag-fe-build-0
     - gf-rrag-ing-build-0

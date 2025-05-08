@@ -13,15 +13,35 @@
 # limitations under the License.
 
 module "cloud_run_ingestion" {
-  source           = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/cloud-run-v2"
-  project_id       = local.project.project_id
-  name             = "${var.name}-ingestion"
-  region           = var.region
-  create_job       = true
-  ingress          = var.cloud_run_configs.ingestion.ingress
-  containers       = var.cloud_run_configs.ingestion.containers
-  service_account  = module.projects.service_accounts["project/gf-rrag-ing-0"].email
-  managed_revision = false
+  source              = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/cloud-run-v2"
+  project_id          = local.project.project_id
+  name                = "${var.name}-ingestion"
+  region              = var.region
+  create_job          = true
+  ingress             = var.cloud_run_configs.ingestion.ingress
+  service_account     = module.projects.service_accounts["project/gf-rrag-ing-0"].email
+  managed_revision    = false
+  deletion_protection = var.enable_deletion_protection
+  containers = merge({
+    cloudsql-proxy = {
+      image   = "gcr.io/cloud-sql-connectors/cloud-sql-proxy"
+      command = ["/cloud-sql-proxy"]
+      args = [
+        module.dns_private_zone_cloudsql.domain,
+        "--address",
+        "0.0.0.0",
+        "--port",
+        "5432",
+        "--private-ip",
+        "--auto-iam-authn",
+        "--health-check",
+        "--structured-logs",
+        "--http-address",
+        "0.0.0.0"
+      ]
+    } },
+    var.cloud_run_configs.ingestion.containers
+  )
   iam = {
     "roles/run.invoker" = concat(
       [module.projects.service_accounts["project/gf-rrag-ing-sched-0"].iam_email],
@@ -31,6 +51,7 @@ module "cloud_run_ingestion" {
   revision = {
     gen2_execution_environment = true
     max_instance_count         = var.cloud_run_configs.ingestion.max_instance_count
+    tags                       = var.cloud_run_configs.ingestion.vpc_access_tags
     vpc_access = {
       egress = var.cloud_run_configs.ingestion.vpc_access_egress
       network = (var.networking_config.create
@@ -42,10 +63,8 @@ module "cloud_run_ingestion" {
         ? module.vpc[0].subnet_ids["${var.region}/${var.networking_config.subnet_id}"]
         : var.networking_config.subnet_id
       )
-      tags = var.cloud_run_configs.ingestion.vpc_access_tags
     }
   }
-  deletion_protection = var.enable_deletion_protection
 }
 
 resource "google_cloud_scheduler_job" "ingestion_scheduler" {

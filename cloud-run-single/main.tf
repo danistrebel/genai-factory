@@ -37,12 +37,16 @@ resource "google_compute_security_policy" "default" {
   project = local.project.project_id
 
   dynamic "rule" {
-    for_each = var.allowed_ip_ranges == null ? [] : [""]
+    for_each    = var.allowed_ip_ranges == null ? [] : [""]
+    description = "Allowed IP ranges."
+
     content {
       action   = "allow"
       priority = "100"
+
       match {
         versioned_expr = "SRC_IPS_V1"
+
         config {
           src_ip_ranges = var.allowed_ip_ranges
         }
@@ -51,15 +55,17 @@ resource "google_compute_security_policy" "default" {
   }
 
   rule {
-    action   = "deny(403)"
-    priority = "2147483647"
+    action      = "deny(403)"
+    priority    = "2147483647"
+    description = "Default deny rule."
+
     match {
       versioned_expr = "SRC_IPS_V1"
+
       config {
         src_ip_ranges = ["*"]
       }
     }
-    description = "default deny rule"
   }
 }
 
