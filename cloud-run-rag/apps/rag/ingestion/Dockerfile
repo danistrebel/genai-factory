@@ -15,22 +15,19 @@
 # Use an official Python runtime as a parent image
 FROM python:3.10-slim
 
-# Set environment variables for Python
-ENV PYTHONUNBUFFERED True
-# Set Cloud Run specific env var (optional but good practice)
-ENV PORT 8080
+# Set environment variables to improve Python's behavior in Docker
 
-# Set the working directory in the container
+# Prevents python from writing .pyc files to disc
+ENV PYTHONDONTWRITEBYTECODE 1
+# Prevents python from buffering stdout and stderr (good for logging)
+ENV PYTHONUNBUFFERED 1
+
 WORKDIR /app
 
-# Copy the dependencies file and install dependencies
-COPY requirements.txt requirements.txt
+COPY requirements.txt .
+
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
 COPY . .
 
-# Command to run the indexer script when the container starts
-# This will be overridden by the Cloud Run Job's command/args if specified there,
-# but it's good practice to have a default.
 CMD ["python", "main.py"]

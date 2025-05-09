@@ -24,7 +24,7 @@ locals {
     "BQ_DATASET=${local.bigquery_id}",
     "BQ_TABLE=${local.bigquery_id}",
     "DB_NAME=${var.name}",
-    "DB_SA=${module.projects.service_accounts["project/gf-rrag-ing-0"].service_account.account_id}",
+    "DB_SA=${module.projects.service_accounts["project/gf-rrag-ing-0"].service_account.account_id}@${local.project.project_id}.iam",
     "DB_TABLE=${var.name}",
     "PROJECT_ID=${local.project.project_id}",
     "REGION=${var.region}"
@@ -55,7 +55,7 @@ output "commands" {
   # Ingestion Cloud Run
   gcloud builds submit ./apps/rag/ingestion \
     --project ${local.project.project_id} \
-    --pack image=${var.region}-docker.pkg.dev/${local.project.project_id}/cloud-run-source-deploy/ingestion \
+    --tag ${var.region}-docker.pkg.dev/${local.project.project_id}/cloud-run-source-deploy/ingestion \
     --quiet
 
   gcloud run jobs deploy ${var.name}-ingestion \
@@ -68,7 +68,7 @@ output "commands" {
   # Frontend Cloud Run
   gcloud builds submit ./apps/rag/frontend \
     --project ${local.project.project_id} \
-    --pack image=${var.region}-docker.pkg.dev/${local.project.project_id}/cloud-run-source-deploy/frontend \
+    --tag ${var.region}-docker.pkg.dev/${local.project.project_id}/cloud-run-source-deploy/frontend \
     --quiet
 
   gcloud run jobs deploy ${var.name}-frontend \

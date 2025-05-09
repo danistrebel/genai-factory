@@ -139,12 +139,12 @@ module "cloud_run_frontend" {
       image   = "gcr.io/cloud-sql-connectors/cloud-sql-proxy"
       command = ["/cloud-sql-proxy"]
       args = [
-        module.dns_private_zone_cloudsql.domain,
+        module.cloudsql.connection_name,
         "--address",
         "0.0.0.0",
         "--port",
         "5432",
-        "--private-ip",
+        "--psc",
         "--auto-iam-authn",
         "--health-check",
         "--structured-logs",
