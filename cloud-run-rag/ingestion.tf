@@ -13,7 +13,8 @@
 # limitations under the License.
 
 module "cloud_run_ingestion" {
-  source              = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/cloud-run-v2"
+  source = "../../cloud-foundation-fabric/modules/cloud-run-v2"
+  # source              = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/cloud-run-v2"
   project_id          = local.project.project_id
   name                = "${var.name}-ingestion"
   region              = var.region
@@ -81,7 +82,7 @@ resource "google_cloud_scheduler_job" "ingestion_scheduler" {
 
   http_target {
     http_method = "POST"
-    uri         = "https://run.googleapis.com/v2/projects/${local.project.project_id}/locations/${var.region}/jobs/${module.cloud_run_ingestion.job.name}"
+    uri         = "https://${var.region}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${local.project.project_id}/jobs/${module.cloud_run_ingestion.job.name}:run"
 
     oauth_token {
       service_account_email = module.projects.service_accounts["project/gf-rrag-ing-sched-0"].email

@@ -137,10 +137,7 @@ def get_embeddings_batch(texts: list[str]) -> list[list[float]]:
     if not texts:
         return []
     try:
-        embeddings = vertex_ai_client.models.embed_content(
-            model=MODEL_ID,
-            contents=texts,
-        ).embeddings[0].values
+        embeddings = vertex_ai_client.models.embed_content(model=MODEL_ID, contents=texts).embeddings
 
         # Add basic validation
         if not embeddings:
@@ -259,7 +256,7 @@ def run_indexer():
         `{PROJECT_ID}.{BQ_DATASET}.{BQ_TABLE}`
     """
 
-    logging.info(f"Executing BigQuery query: {query}")
+    logging.info(f"Executing BigQuery query")
 
     try:
         query_job = bq_client.query(query)
@@ -287,11 +284,23 @@ def run_indexer():
 
         # 2. Construct Text for Embedding
         text_parts = []
-        for col in BQ_TEXT_COLUMNS:
-            # No need for strip here as we cleaned the list earlier
-            if col in row and row[col] is not None:
-                text_parts.append(str(row[col]))
-        text_to_embed = " ".join(text_parts).strip() # Combine and remove leading/trailing whitespace
+        for col_name_for_embed in BQ_TEXT_COLUMNS:
+            # Use row.get() which your debug logs confirmed works correctly.
+            value_from_row = row.get(col_name_for_embed)
+
+            if value_from_row is not None:
+                # This will append the string value. If value_from_row is an empty string "",
+                # it will be appended as such, which matches the intent of your
+                # original commented logic: "Current logic appends even if
+                # row[col_name_for_embed] is an empty string """
+                text_parts.append(str(value_from_row))
+            # Optional: Add an else with logging here if you want to know when a BQ_TEXT_COLUMN
+            # specifically yields None (either key not found, or value is SQL NULL).
+            # else:
+            #     if row_num < 3: # To avoid excessive logging
+            #         logging.info(f"ID {item_id}: Column '{col_name_for_embed}' from BQ_TEXT_COLUMNS was None or not found using .get(). Skipping for text_parts.")
+
+        text_to_embed = " ".join(text_parts).strip()
 
         if not text_to_embed:
             logging.warning(f"Skipping row with generated ID {item_id} due to empty text for embedding (from columns: {BQ_TEXT_COLUMNS}).")

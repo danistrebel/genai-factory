@@ -80,7 +80,7 @@ variable "ingestion_schedule_configs" {
   type = object({
     attempt_deadline = optional(string, "60s")
     retry_count      = optional(number, 3)
-    schedule         = optional(string, "* * * * *")
+    schedule         = optional(string, "*/30 * * * *")
   })
   nullable = false
   default  = {}
