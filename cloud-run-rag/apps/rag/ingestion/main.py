@@ -111,8 +111,6 @@ def create_table_if_not_exists(engine: sqlalchemy.engine.Engine, table_name: str
     # Use the fixed GENERATED_ID_COLUMN_NAME for the primary key (BIGINT)
     # Quote all identifiers to be safe
     create_table_sql = f"""
-    CREATE EXTENSION IF NOT EXISTS vector;
-
     CREATE TABLE IF NOT EXISTS "{table_name}" (
         "{GENERATED_ID_COLUMN_NAME}" BIGINT PRIMARY KEY,
         rank INTEGER,
@@ -128,7 +126,6 @@ def create_table_if_not_exists(engine: sqlalchemy.engine.Engine, table_name: str
     try:
         with engine.connect() as connection:
             with connection.begin(): # Use transaction for DDL
-                 connection.execute(sqlalchemy.text("CREATE EXTENSION IF NOT EXISTS vector;"))
                  connection.execute(sqlalchemy.text(create_table_sql))
             logging.info(f"Ensured table '{table_name}' exists with specified columns (and pgvector). PK: '{GENERATED_ID_COLUMN_NAME}'")
     except Exception as e:

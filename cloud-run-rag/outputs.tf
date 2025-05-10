@@ -39,6 +39,13 @@ output "commands" {
   # Run the following commands to deploy the application.
   # Alternatively, deploy the application through your CI/CD pipeline.
 
+  # Install the vector extension in CloudSQL
+  # There's no way to activate extensions in CloudSQL from Terraform.
+  # - Go to https://console.cloud.google.com/sql/instances/${var.name}/users.
+  # - Give a secure password to your postgres user
+  # - In https://console.cloud.google.com/sql/instances/${var.name}/studio select any database and enter with postgres user.
+  # - Run this query: CREATE EXTENSION IF NOT EXISTS vector;
+
   # Load sample data into BigQuery
   bq load \
     --source_format=CSV \
@@ -56,6 +63,8 @@ output "commands" {
   gcloud builds submit ./apps/rag/ingestion \
     --project ${local.project.project_id} \
     --tag ${var.region}-docker.pkg.dev/${local.project.project_id}/cloud-run-source-deploy/ingestion \
+    --service-account ${module.projects.service_accounts["project/gf-rrag-ing-build-0"].id} \
+    --default-buckets-behavior=REGIONAL_USER_OWNED_BUCKET \
     --quiet
 
   gcloud run jobs deploy ${var.name}-ingestion \
@@ -69,6 +78,8 @@ output "commands" {
   gcloud builds submit ./apps/rag/frontend \
     --project ${local.project.project_id} \
     --tag ${var.region}-docker.pkg.dev/${local.project.project_id}/cloud-run-source-deploy/frontend \
+    --service-account ${module.projects.service_accounts["project/gf-rrag-fe-build-0"].id} \
+    --default-buckets-behavior=REGIONAL_USER_OWNED_BUCKET \
     --quiet
 
   gcloud run jobs deploy ${var.name}-frontend \

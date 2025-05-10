@@ -36,6 +36,8 @@ service_accounts:
 iam:
   roles/bigquery.dataViewer:
     - gf-rrag-ing-0
+  roles/bigquery.jobUser:
+    - gf-rrag-ing-0
   roles/cloudbuild.builds.editor:
     - gf-rrag-fe-build-0
     - gf-rrag-ing-build-0
@@ -58,6 +60,9 @@ iam:
     - gf-rrag-fe-build-0
     - gf-rrag-ing-build-0
   roles/iam.serviceAccountUser:
+    - gf-rrag-fe-build-0
+    - gf-rrag-ing-build-0
+  roles/storage.admin:
     - gf-rrag-fe-build-0
     - gf-rrag-ing-build-0
 
