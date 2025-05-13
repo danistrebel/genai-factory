@@ -21,7 +21,7 @@ cp terraform.tfvars.sample terraform.tfvars
 terraform init
 terraform apply
 
-# Deploy the applicaiton: follow the commands in the output screen to deploy the application(s).
+# Deploy the application: follow the commands in the output screen to deploy the application(s).
 ```
 <!-- BEGIN TFDOC -->
 ## Variables

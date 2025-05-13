@@ -9,7 +9,7 @@ A collection of scripts to deploy AI infrastructures and applications in GCP, fo
 ## Applications
 
 - [Single Cloud Run](./cloud-run-single/README.md) - A single, secure public Cloud Run behind an external application load balancer and interact with Gemini.
-- [RAG with Cloud Run](./cloud-run-single/README.md) - A "Retrieval-Augmented Generation" (RAG) system, leveraging Cloud Run, Vetex AI, Cloud SQL and BigQuery.
+- [RAG with Cloud Run](./cloud-run-single/README.md) - A "Retrieval-Augmented Generation" (RAG) system, leveraging Cloud Run, Vertex AI, Cloud SQL and BigQuery.
 
 ## Quick Start
 
@@ -24,7 +24,7 @@ cp terraform.tfvars.sample terraform.tfvars
 terraform init
 terraform apply
 
-# Deploy the applicaiton: follow the commands in the output screen to deploy the application(s).
+# Deploy the application: follow the commands in the output screen to deploy the application(s).
 ```
 
 ## Modules content
@@ -72,7 +72,7 @@ project_config = {
 }
 ```
 
-You'll need to configure your projects as expected by each module. Application templates are quite self-explenatory, as they list the requirements for each project. Alternatively, you can application templates direclty into [FAST project factory](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/master/fast/stages/2-project-factory).
+You'll need to configure your projects as expected by each module. Application templates are quite self-explanatory, as they list the requirements for each project. Alternatively, you can application templates directly into [FAST project factory](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/master/fast/stages/2-project-factory).
 
 # Networking Configuration
 

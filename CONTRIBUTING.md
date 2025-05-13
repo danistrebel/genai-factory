@@ -4,9 +4,10 @@ Thank you for considering contributing to this project!
 
 We welcome contributions of all kinds. To get started:
 
-1. **Fork the repository** on GitHub.
-2. **Make your changes** in a new branch.
-3. **Submit a pull request** with a clear description of your changes.
+1. **Sign [Google CLA](https://cla.developers.google.com/about/google-individual)**
+2. **Fork the repository** on GitHub.
+3. **Make your changes** in a new branch.
+4. **Submit a pull request** with a clear description of your changes.
 
 We will review your pull request and provide feedback as soon as possible.
 
@@ -14,7 +15,7 @@ Thank you for your contributions!
 
 ## Useful Commands
 
-Create virtual envrionment for testing and generate docs
+Create virtual environment for testing and generate docs
 
 ```shell
 python3 -m venv ~/.venv-genai-factory
@@ -33,7 +34,7 @@ Current "hot tasks" include:
 
 - How to decouple code to setup the underlying infrastructure and the AI applications, given multiple applications should be able to reuse the same infrastructure, although each application has specific requirements (including services activation, networking, IAM and more).
 
-- Add model armor support to Fabric modules and here when avaialble
+- Add model armor support to Fabric modules and here when available
 
 - Add new AI apps
 

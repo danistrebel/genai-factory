@@ -2,7 +2,7 @@
 
 **THIS MODULE IS STILL WIP**
 
-The module deploys a "Retrieval-Augmented Generation" (RAG) system, leveraging Cloud Run, Vetex AI, Cloud SQL and BigQuery.
+The module deploys a "Retrieval-Augmented Generation" (RAG) system, leveraging Cloud Run, Vertex AI, Cloud SQL and BigQuery.
 
 A Cloud Run job periodically indexes sample [movies data](./data/top-100-imdb-movies.csv) in BigQuery, creates embeddings and stores them in a Cloud SQL database. Another Cloud Run frontend application leverages the text embeddings from the Cloud SQL database and answers questions on these movies in json format.
 
@@ -16,7 +16,7 @@ The deployment includes
 	
 - **Databases**, specifically:
 	- A **BigQuery dataset**, where users store their data to augment the model
-	- A private **Cloud SQL** instance where the indexer job stores text embeddings. By default, this is Postgres.
+	- A private **Cloud SQL** instance where the indexer job stores text embeddings. By default, this is PostgreSQL.
 
 - A **frontend subsystem**, made of:
 	- A **Global external application load balancer** (+ Cloud Armor IP allowlist security backend policy)
@@ -37,7 +37,7 @@ cp terraform.tfvars.sample terraform.tfvars
 terraform init
 terraform apply
 
-# Deploy the applicaiton: follow the commands in the output screen to deploy the application(s).
+# Deploy the application: follow the commands in the output screen to deploy the application(s).
 ```
 <!-- BEGIN TFDOC -->
 ## Variables
