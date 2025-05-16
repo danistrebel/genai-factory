@@ -41,6 +41,8 @@ iam:
     - gf-srun-build-0
   roles/iam.serviceAccountUser:
     - gf-srun-build-0
+  roles/logging.logWriter:
+    - gf-srun-0
 
 # roles/aiplatform.user is authoritatively granted
 # by aiplatform APIs when activated

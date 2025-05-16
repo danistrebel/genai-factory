@@ -14,7 +14,7 @@
 
 # Use an official lightweight Python image.
 # https://hub.docker.com/_/python
-FROM python:3.10-slim
+FROM python:3.12-slim
 
 # Allow statements and log messages to immediately appear in the Knative logs
 ENV PYTHONUNBUFFERED True
@@ -30,9 +30,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Expose the port the app runs on (though Cloud Run uses the PORT env var)
-EXPOSE 8080
+EXPOSE $PORT
 
 # Set the default command to run the application using Gunicorn
 # Cloud Run injects the PORT environment variable.
-# Using exec form to make Gunicorn the main process (PID 1)
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 main:app
+CMD exec gunicorn main:app --workers 1 --threads 8 --timeout 0 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
