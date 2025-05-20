@@ -1,6 +1,6 @@
 # Chat application for Cloud Run
 
-A simple chat application.
+A simple chat application leveraging Gemini APIs and exposing a JSON interface.
 
 ## Use the application
 

@@ -118,6 +118,7 @@ variable "project_config" {
     control            = optional(bool, true) # control an existing project
     create             = optional(bool, true) # create and control project
     parent             = optional(string)     # if control equals true
+    prefix             = optional(string)
   })
   nullable = false
   validation {
@@ -127,12 +128,6 @@ variable "project_config" {
     )
     error_message = "Parent must be of the form folders/folder_id or organizations/organization_id."
   }
-}
-
-variable "prefix" {
-  description = "The prefix to use for projects and GCS buckets."
-  type        = string
-  default     = null
 }
 
 variable "public_domains" {

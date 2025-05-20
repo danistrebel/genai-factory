@@ -1,0 +1,73 @@
+---
+
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: gf-srun-0
+
+# Enable APIs
+services:
+  - aiplatform.googleapis.com
+  - artifactregistry.googleapis.com
+  - cloudbuild.googleapis.com
+  - cloudresourcemanager.googleapis.com
+  - compute.googleapis.com
+  - dns.googleapis.com
+  - run.googleapis.com
+  - serviceusage.googleapis.com
+
+# Create application SAs
+service_accounts:
+  gf-srun-0:
+    iam:
+      roles/iam.serviceAccountUser:
+        - automation/rw
+  gf-srun-build-0:
+
+# Define buckets and SAs for automation
+automation:
+  service_accounts:
+    rw:
+  bucket:
+    name: gf-srun-0
+    description: Terraform state bucket
+    iam:
+      roles/storage.objectAdmin:
+        - automation/rw
+      roles/storage.objectViewer:
+        - automation/rw
+
+# Grants roles
+iam_by_principals:
+  automation/rw:
+    - roles/dns.admin
+    - roles/compute.loadBalancerAdmin
+    - roles/compute.networkAdmin
+    - roles/compute.securityAdmin
+    - roles/run.admin
+  gf-srun-0:
+    - roles/logging.logWriter
+  gf-srun-build-0:
+    - roles/run.admin
+    - roles/cloudbuild.builds.editor
+    - roles/storage.objectCreator
+    - roles/storage.objectViewer
+    - roles/artifactregistry.writer
+    - roles/iam.serviceAccountUser
+
+# Grant roles/aiplatform.user as additive,
+# as it is authoritatively granted by aiplatform APIs to default SA
+iam_bindings_additive:
+  - member: gf-srun-0
+    role: roles/aiplatform.user

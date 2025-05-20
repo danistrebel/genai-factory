@@ -206,6 +206,8 @@ pyrightconfig.json
 # Local .terraform directories
 **/.terraform/*
 
+**/providers.tf
+
 # Terraform lock files
 **/.terraform.lock.hcl
 

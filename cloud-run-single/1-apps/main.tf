@@ -12,36 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-locals {
-  project = module.projects.projects["project"]
-}
-
-module "projects" {
-  source = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/project-factory?ref=fast-dev"
-  data_defaults = {
-    billing_account = var.project_config.billing_account_id
-    parent          = var.project_config.parent
-    prefix          = var.prefix
-    project_reuse   = var.project_config.create ? null : {}
-  }
-  data_merges = {
-    services = var.networking_config.create ? ["dns.googleapis.com"] : []
-  }
-  factories_config = {
-    projects_data_path = "./projects"
-  }
-}
-
 resource "google_compute_security_policy" "default" {
   name    = var.name
-  project = local.project.project_id
+  project = var.project_id
 
   dynamic "rule" {
-    for_each    = var.allowed_ip_ranges == null ? [] : [""]
+    for_each = var.allowed_ip_ranges == null ? [] : [""]
 
     content {
-      action   = "allow"
-      priority = "100"
+      action      = "allow"
+      priority    = "100"
       description = "Allowed IP ranges."
 
       match {
@@ -71,14 +51,14 @@ resource "google_compute_security_policy" "default" {
 
 resource "google_compute_global_address" "address" {
   count      = var.ip_address == null ? 1 : 0
-  project    = local.project.project_id
+  project    = var.project_id
   name       = var.name
   ip_version = "IPV4"
 }
 
 module "lb_external_redirect" {
   source              = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/net-lb-app-ext"
-  project_id          = local.project.project_id
+  project_id          = var.project_id
   name                = "${var.name}-redirect"
   use_classic_version = false
   forwarding_rules_config = {
@@ -102,7 +82,7 @@ module "lb_external_redirect" {
 
 module "lb_external" {
   source              = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/net-lb-app-ext"
-  project_id          = local.project.project_id
+  project_id          = var.project_id
   name                = var.name
   use_classic_version = false
   protocol            = "HTTPS"
@@ -147,12 +127,12 @@ module "lb_external" {
 
 module "cloud_run" {
   source           = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/cloud-run-v2"
-  project_id       = local.project.project_id
+  project_id       = var.project_id
   name             = var.name
   region           = var.region
   ingress          = var.cloud_run_configs.ingress
   containers       = var.cloud_run_configs.containers
-  service_account  = module.projects.service_accounts["project/gf-srun-0"].email
+  service_account  = var.service_accounts["project/gf-srun-0"].email
   managed_revision = false
   iam = {
     "roles/run.invoker" = var.cloud_run_configs.service_invokers
