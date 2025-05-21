@@ -18,9 +18,9 @@ project_id = "${projects.project.id}"
 service_accounts = {
 %{ for k,v in service_accounts ~}
   "${k}" = {
-    email = "${v.email}"
+    email     = "${v.email}"
     iam_email = "${v.iam_email}"
-    id = "${v.id}"
+    id        = "${v.id}"
   }
 %{ endfor ~}
 }

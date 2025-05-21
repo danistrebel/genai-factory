@@ -48,7 +48,7 @@ automation:
       roles/storage.objectViewer:
         - automation/rw
 
-# Grants roles
+# Grant roles
 iam_by_principals:
   automation/rw:
     - roles/dns.admin
