@@ -152,3 +152,44 @@ module "lb_internal_dns" {
     }
   }
 }
+
+# Allow certificate manager to request certificates to CAS
+resource "google_privateca_ca_pool_iam_binding" "ccm_certificate_requester" {
+  count    = var.lbs_config.internal.enable ? 1 : 0
+  project  = var.project_config.id
+  location = var.region
+  ca_pool  = module.cas[0].ca_pool_id
+  role     = "roles/privateca.certificateRequester"
+  members = [
+    # TODO: leverage outputs of project factory to dynamically retrieve this
+    "serviceAccount:service-${var.project_config.number}@gcp-sa-certificatemanager.iam.gserviceaccount.com",
+  ]
+}
+
+# LB certificate
+module "certificate_manager" {
+  count      = var.lbs_config.internal.enable ? 1 : 0
+  source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/certificate-manager"
+  project_id = var.project_config.id
+  certificates = {
+    (var.name) = {
+      location = var.region
+      managed = {
+        domains         = [var.lbs_config.internal.domain]
+        issuance_config = var.name
+      }
+    }
+  }
+  issuance_configs = {
+    (var.name) = {
+      location                   = var.region
+      ca_pool                    = module.cas[0].ca_pool_id
+      key_algorithm              = "ECDSA_P256"
+      lifetime                   = "1814400s"
+      rotation_window_percentage = 34
+    }
+  }
+  depends_on = [
+    google_privateca_ca_pool_iam_binding.ccm_certificate_requester
+  ]
+}
