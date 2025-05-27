@@ -59,6 +59,9 @@ service_accounts:
   gf-rrag-ing-sched-0: {}
 
 # Grant roles
+iam:
+  roles/privateca.certificateRequester:
+    - certificatemanager
 iam_by_principals:
   iac-rw:
     - roles/bigquery.admin

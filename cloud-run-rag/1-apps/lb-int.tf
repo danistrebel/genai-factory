@@ -153,19 +153,6 @@ module "lb_internal_dns" {
   }
 }
 
-# Allow certificate manager to request certificates to CAS
-resource "google_privateca_ca_pool_iam_binding" "ccm_certificate_requester" {
-  count    = var.lbs_config.internal.enable ? 1 : 0
-  project  = var.project_config.id
-  location = var.region
-  ca_pool  = module.cas[0].ca_pool_id
-  role     = "roles/privateca.certificateRequester"
-  members = [
-    # TODO: leverage outputs of project factory to dynamically retrieve this
-    "serviceAccount:service-${var.project_config.number}@gcp-sa-certificatemanager.iam.gserviceaccount.com",
-  ]
-}
-
 # LB certificate
 module "certificate_manager" {
   count      = var.lbs_config.internal.enable ? 1 : 0
@@ -189,7 +176,4 @@ module "certificate_manager" {
       rotation_window_percentage = 34
     }
   }
-  depends_on = [
-    google_privateca_ca_pool_iam_binding.ccm_certificate_requester
-  ]
 }
