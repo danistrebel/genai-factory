@@ -20,6 +20,6 @@
 
 | name | description | sensitive |
 |---|---|:---:|
-| [commands](outputs.tf#L36) | Run the following commands when the deployment completes to deploy the app. |  |
-| [ip_addresses](outputs.tf#L94) | The load balancers IP addresses. |  |
+| [commands](outputs.tf#L46) | Run the following commands when the deployment completes to deploy the app. |  |
+| [ip_addresses](outputs.tf#L106) | The load balancers IP addresses. |  |
 <!-- END TFDOC -->
