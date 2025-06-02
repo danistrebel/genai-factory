@@ -13,9 +13,19 @@
 # limitations under the License.
 
 locals {
+  _sa_db_frontend = replace(
+    var.service_accounts["project/gf-rrag-fe-0"].email,
+    ".gserviceaccount.com",
+    ""
+  )
+  _sa_db_ingestion = replace(
+    var.service_accounts["project/gf-rrag-ing-0"].email,
+    ".gserviceaccount.com",
+    ""
+  )
   _env_vars_frontend = [
     "DB_NAME=${var.name}",
-    "DB_SA=${var.service_accounts["project/gf-rrag-fe-0"].id}",
+    "DB_SA=${local._sa_db_frontend}",
     "DB_TABLE=${var.name}",
     "PROJECT_ID=${var.project_config.id}",
     "REGION=${var.region}"
@@ -24,7 +34,7 @@ locals {
     "BQ_DATASET=${local.bigquery_id}",
     "BQ_TABLE=${local.bigquery_id}",
     "DB_NAME=${var.name}",
-    "DB_SA=${var.service_accounts["project/gf-rrag-ing-0"].id}@${var.project_config.id}.iam",
+    "DB_SA=${local._sa_db_ingestion}",
     "DB_TABLE=${var.name}",
     "PROJECT_ID=${var.project_config.id}",
     "REGION=${var.region}"
@@ -40,11 +50,13 @@ output "commands" {
   # Alternatively, deploy the application through your CI/CD pipeline.
 
   # Install the vector extension in CloudSQL
-  # There's no way to activate extensions in CloudSQL from Terraform.
-  # - Go to https://console.cloud.google.com/sql/instances/${var.name}/users.
-  # - Give a secure password to your postgres user
-  # - In https://console.cloud.google.com/sql/instances/${var.name}/studio select any database and enter with postgres user.
-  # - Run this query: CREATE EXTENSION IF NOT EXISTS vector;
+  gcloud sql users set-password postgres \
+    --password your_complex_pwd \
+    --instance ${module.cloudsql.name} \
+    --project ${var.project_config.id}
+  # In https://console.cloud.google.com/sql/instances/${var.name}/studio
+  # Select the ${var.name} database and enter with postgres user.
+  # In the Editor 1 tab, run this query: CREATE EXTENSION IF NOT EXISTS vector;
 
   # Load sample data into BigQuery
   bq load \
@@ -62,7 +74,7 @@ output "commands" {
   # Ingestion Cloud Run
   gcloud builds submit ./apps/rag/ingestion \
     --project ${var.project_config.id} \
-    --tag ${var.region}-docker.pkg.dev/${var.project_config.id}/cloud-run-source-deploy/ingestion \
+    --tag ${var.region}-docker.pkg.dev/${var.project_config.id}/${var.name}/ingestion \
     --service-account ${var.service_accounts["project/gf-rrag-ing-build-0"].id} \
     --default-buckets-behavior=REGIONAL_USER_OWNED_BUCKET \
     --quiet
@@ -71,22 +83,22 @@ output "commands" {
     --project ${var.project_config.id} \
     --region ${var.region} \
     --container=ingestion \
-    --image=${var.region}-docker.pkg.dev/${var.project_config.id}/cloud-run-source-deploy/ingestion \
+    --image=${var.region}-docker.pkg.dev/${var.project_config.id}/${var.name}/ingestion \
     --set-env-vars ${local.env_vars_ingestion}
 
   # Frontend Cloud Run
   gcloud builds submit ./apps/rag/frontend \
     --project ${var.project_config.id} \
-    --tag ${var.region}-docker.pkg.dev/${var.project_config.id}/cloud-run-source-deploy/frontend \
+    --tag ${var.region}-docker.pkg.dev/${var.project_config.id}/${var.name}/frontend \
     --service-account ${var.service_accounts["project/gf-rrag-fe-build-0"].id} \
     --default-buckets-behavior=REGIONAL_USER_OWNED_BUCKET \
     --quiet
 
-  gcloud run jobs deploy ${var.name}-frontend \
+  gcloud run deploy ${var.name}-frontend \
     --project ${var.project_config.id} \
     --region ${var.region} \
     --container=frontend \
-    --image=${var.region}-docker.pkg.dev/${var.project_config.id}/cloud-run-source-deploy/frontend \
+    --image=${var.region}-docker.pkg.dev/${var.project_config.id}/${var.name}/frontend \
     --set-env-vars ${local.env_vars_frontend}
   EOT
 }
@@ -96,12 +108,12 @@ output "ip_addresses" {
   value = {
     external = (
       var.lbs_config.external.enable
-      ? module.lb_external[0].address
+      ? module.lb_external[0].address[""]
       : null
     )
     internal = (
       var.lbs_config.internal.enable
-      ? module.lb_internal[0].address
+      ? module.lb_internal[0].address[""]
       : null
     )
   }
