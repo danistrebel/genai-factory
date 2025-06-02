@@ -51,20 +51,13 @@ variable "project_number" {
 }
 
 variable "region" {
-  default = "europe-west8"
+  default = "europe-west1"
 }
 
 variable "regions" {
   default = {
-    primary   = "europe-west8"
-    secondary = "europe-west9"
-  }
-}
-
-variable "secops_tenant_config" {
-  default = {
-    customer_id = "customer-id"
-    region      = "europe"
+    primary   = "europe-west1"
+    secondary = "europe-west8"
   }
 }
 
