@@ -1,4 +1,36 @@
-# Cloud Run - single / Platform
+# Cloud Run - single / Application Deployment
+
+This module is part of the Single Cloud Run factory and is responsible for deploying the required infrastructure in an existing project, or one managed by the [0-projects](../0-projects) module.
+
+It leverages the Google Cloud Run service to allow for the deployment of a containerized application and an External Application Load Balancer to expose them publicly.
+
+Once ran, the terraform module prints the commands required to deploy the application to Cloud Run as `gcloud` commands.
+
+## Deployed Architecture
+
+![Deployed Architecture Diagram](diagram.png)
+
+This module deploys and configures the following core components:
+
+- **Google Cloud Run Service:** Where to deploy containerized applications.
+- **Google Cloud Load Balancer:** A global external HTTP(S) load balancer to route traffic to the Cloud Run services.
+- **Serverless NEG:** A Serverless Network Endpoint Group to connect the load balancer to the Cloud Run services.
+- **VPC:** Optionally sets up a VPC, used for Private Google Access.
+- **VPC Direct Egress:** Sets up VPC direct egress for Cloud Run services to access the Google APIs via PGA in a VPC network.
+
+## Configurations
+
+Key configurations include:
+
+- `cloud_run_configs`: Defines the configurations for the Cloud Run services, including container images, ingress settings, instance counts, and VPC access.
+- `networking_config`: Configures the networking setup, including VPC and subnet creation or referencing existing ones.
+- `allowed_ip_ranges`: Specifies the IP ranges allowed to access the Cloud Run service.
+- `public_domains`: Lists the domains connected to the public load balancer.
+
+## Applications
+
+- [Chat App](./apps/chat/README.md): A simple chat application deployed on Cloud Run.
+
 <!-- BEGIN TFDOC -->
 ## Variables
 
