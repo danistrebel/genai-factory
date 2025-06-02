@@ -6,9 +6,9 @@ A collection of scripts to deploy AI infrastructures and applications in GCP, fo
 - Follows the least-privilege principle: no default service accounts, primitive roles, minimal permissions.
 - Compatible with [Cloud Foundation Fabric FAST](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric) [project-factory](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/master/modules/project-factory) and application templates.
 
-## Applications
+## Factories
 
-- [Single Cloud Run](./cloud-run-single/README.md) - A single, secure public Cloud Run running a container behind an external application load balancer that interacts with Gemini.
+- [Single Cloud Run](./cloud-run-single/README.md) - A single Cloud Run running a container behind an application load balancer that interacts with Gemini.
 - [RAG with Cloud Run](./cloud-run-single/README.md) - A "Retrieval-Augmented Generation" (RAG) system, leveraging Cloud Run, Vertex AI, Cloud SQL and BigQuery.
 
 These sample infrastructure deployments and applications can be used to be further extended and to ship your own application code.
@@ -31,7 +31,6 @@ terraform apply
 cd ..
 
 # Deploy the platform services.
-# If you ran the previous step, providers.tf and terraform.auto.tfvars will be present.
 cd 1-apps
 cp terraform.tfvars.sample terraform.tfvars # Customize.
 terraform init
@@ -50,13 +49,13 @@ It creates projects and service accounts, enables APIs, and grants IAM roles usi
 
 Running this module is optional. If you can create projects, use it. Alternatively, you can give the yaml project definitions to your platform team. They can use it with their [FAST project factory](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/master/fast/stages/2-project-factory) or easily derive the requirements and implement them with their own mechanism.
 
-The module also creates components in the same project to allow the `1-apps` module to run. This includes Terraform service accounts, roles, and a state bucket. Finally, the module writes `providers.tf` and `terraform.auto.tfvars` files in the `1-apps` folder.
+The module also creates components in the same project to allow the [1-apps](#1-apps) module to run. This includes Terraform service accounts, roles, and a state bucket. Finally, the module writes `providers.tf` and `terraform.auto.tfvars` files in the [1-apps folder](#1-apps).
 
 ### 1-apps
 
 It deploys the core platform resources within the project and the AI application on top.
 
-Running this module is required. Note that the module expects projects, service accounts, and roles created by `0-project`. If you don't run `0-projects`, it's your responsibility to ensure these requirements are met.
+Running this module is required. Note that the module expects projects, service accounts, and roles created by [0-projects](#0-projects). If you don't run [0-projects](#0-projects), it's your responsibility to ensure these requirements are met.
 
 ## Projects Configuration
 
@@ -64,7 +63,7 @@ Factories allow you to create new projects or leverage existing projects.
 
 ### Default: create and manage new projects
 
-You can use the `0-projects` module within each factory to create projects and service accounts, activate APIs, grant IAM roles. By default, projects are named `{prefix}-{project_name}`.
+You can use the [0-projects](#0-projects) module within each factory to create projects and service accounts, activate APIs, grant IAM roles. By default, projects are named `{prefix}-{project_name}`.
 
 - `prefix` is controlled through the variable `project_config.prefix`. It is set to null by default and can be customized in your `terraform.tfvars`.
 - `suffix` is controlled in application templates (yaml files in the `data` subfolder) through the `name` property. This also generally corresponds to the default value of the variable `name`, used to name resources in the projects.
@@ -73,7 +72,7 @@ You can use the `0-projects` module within each factory to create projects and s
 
 You may want to reuse existing projects but still configure them: activate services, create service accounts, set IAM roles. To do so:
 
-- Add this configuration to your `0-projects` module `terraform.tfvars`:
+- Add this configuration to your [0-projects](#0-projects) module `terraform.tfvars`:
 
 ```hcl
 project_config = {
@@ -98,8 +97,8 @@ project_config = {
 }
 ```
 
-You'll need to configure your projects as expected by the `1-apps` module of each factory.
-On the other hand, you will need to configure the `terraform.tfvars` of `1-apps` with all the values expected (by default automatically populated by `0-projects`).
+You'll need to configure your projects as expected by the [1-apps](#1-apps) module of each factory.
+On the other hand, you will need to configure the `terraform.tfvars` of [1-apps](#1-apps) with all the values expected (by default automatically populated by [0-projects](#0-projects)).
 If your platform team doesn't use [FAST project factory](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/master/fast/stages/2-project-factory), they can read the requirements from the yaml files defining each project in the data folder under each `0-project` module.
 
 # Networking Configuration
@@ -109,7 +108,7 @@ These include VPCs, subnets, routes, DNS zones, private Google access, and more.
 
 You also have the option to leverage existing VPCs. In this case, it will be your responsibility to create everything needed by the application to work.
 
-To do so, make sure your `terraform.tfvars` in `1-apps` contains this configuration:
+To do so, make sure your `terraform.tfvars` in [1-apps](#1-apps) contains this configuration:
 
 ```hcl
 networking_config = {
