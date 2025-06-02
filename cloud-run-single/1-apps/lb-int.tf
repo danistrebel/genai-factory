@@ -147,7 +147,7 @@ module "lb_internal_dns" {
   }
   recordsets = {
     ("A ${var.lbs_config.internal.domain}") = {
-      records = [module.lb_internal.0.address]
+      records = [module.lb_internal[0].address]
       ttl     = 300
     }
   }

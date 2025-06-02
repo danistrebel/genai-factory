@@ -47,5 +47,5 @@ module "dns_policy_googleapis" {
   factories_config = {
     rules = "./data/dns-policy-rules.yaml"
   }
-  networks = { "${var.name}" = module.vpc[0].id }
+  networks = { (var.name) = module.vpc[0].id }
 }
