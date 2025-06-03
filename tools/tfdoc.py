@@ -51,11 +51,11 @@ import click
 import marko
 
 try:
-  from examples.utils import get_tftest_directive
+  from utils import get_tftest_directive
 except ImportError:
   BASEDIR = Path(__file__).parents[1]
   sys.path.append(str(BASEDIR / 'tests'))
-  from examples.utils import get_tftest_directive
+  from utils import get_tftest_directive
 
 __version__ = '2.1.0'
 
