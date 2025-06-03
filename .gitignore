@@ -237,3 +237,5 @@ crash.*.log
 terraform.rc
 
 .vscode
+
+test-results-raw.xml
