@@ -39,8 +39,8 @@ jobs:
         with:
           terraform_version: 1.11.4
 
-      - uses: terraform-linters/setup-tflint@v4
-        name: Setup TFLint
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
         with:
           tflint_version: v0.54.0
 
@@ -66,16 +66,15 @@ jobs:
         run: |
           terraform fmt -recursive -check -diff $GITHUB_WORKSPACE
 
-      - name: TFLint cloud-run-single
-        run: cd cloud-run-single && tflint --recursive -f compact
-
-      - name: TFLint cloud-run-rag
-        run: cd cloud-run-rag && tflint --recursive -f compact
+      - name: TFLint
+        run: tflint --recursive -f compact
 
       - name: Check documentation
         id: documentation
         run: |
-          python3 tools/check_documentation.py --show-diffs --no-show-summary modules fast blueprints
+          python3 tools/check_documentation.py . \
+            --show-diffs \
+            --no-show-summary
 
       - name: Check documentation links
         id: documentation-links
@@ -85,4 +84,10 @@ jobs:
       - name: Check python formatting
         id: yapf
         run: |
-          yapf -p -d -r *.py
+          yapf . \
+            --parallel \
+            --diff \
+            --recursive \
+            --exclude "**/.terraform/" \
+            --exclude "tools/" \
+            --exclude "tests/"

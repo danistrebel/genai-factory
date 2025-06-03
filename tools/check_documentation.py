@@ -22,7 +22,6 @@ sources. As such, it accepts pretty much the same options as tfdoc does. Its
 main use is in CI pipelines triggered by pull requests.
 '''
 
-
 import difflib
 import enum
 import pathlib
@@ -30,8 +29,8 @@ import pathlib
 import click
 import tfdoc
 
-BASEDIR = pathlib.Path(__file__).resolve().parents[1]
 
+BASEDIR = pathlib.Path(__file__).resolve().parents[1]
 
 class State(enum.IntEnum):
   SKIP = enum.auto()
