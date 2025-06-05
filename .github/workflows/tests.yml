@@ -89,7 +89,7 @@ jobs:
           sed -i 's/required_version = .*$/required_version = ">= ${{ matrix.version }}"/g' tools/lockfile/versions.tf
 
           cd tools/lockfile
-          ${{ matrix.flavour }} init -upgrade=true
+          ${{ matrix.flavour }} init
 
       - name: Upload Terraform provider cache
         uses: actions/cache@v4
