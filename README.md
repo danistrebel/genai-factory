@@ -1,5 +1,7 @@
 # GenAI Factory
 
+[![Linting](https://github.com/GoogleCloudPlatform/genai-factory/actions/workflows/linting.yml/badge.svg?event=schedule)](https://github.com/GoogleCloudPlatform/genai-factory/actions/workflows/linting.yml) [![Tests](https://github.com/GoogleCloudPlatform/genai-factory/actions/workflows/tests.yml/badge.svg?event=schedule)](https://github.com/GoogleCloudPlatform/genai-factory/actions/workflows/tests.yml)
+
 A collection of scripts to deploy AI infrastructures and applications in GCP, following security best-practices.
 
 - Embraces IaC best practices. Infrastructure is implemented in [Terraform](https://developer.hashicorp.com/terraform), leveraging [Terraform resources](https://registry.terraform.io/providers/hashicorp/google/latest/docs) and [Cloud Foundations Fabric modules](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/master/modules).
