@@ -36,12 +36,11 @@ variable "cloud_run_configs" {
           }
         }
       })
-      deletion_protection = optional(bool, true)
-      ingress             = optional(string, "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER")
-      max_instance_count  = optional(number, 3)
-      service_invokers    = optional(list(string), [])
-      vpc_access_egress   = optional(string, "ALL_TRAFFIC")
-      vpc_access_tags     = optional(list(string), [])
+      ingress            = optional(string, "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER")
+      max_instance_count = optional(number, 3)
+      service_invokers   = optional(list(string), [])
+      vpc_access_egress  = optional(string, "ALL_TRAFFIC")
+      vpc_access_tags    = optional(list(string), [])
     })
     ingestion = object({
       containers = optional(map(any), {
@@ -49,12 +48,11 @@ variable "cloud_run_configs" {
           image = "us-docker.pkg.dev/cloudrun/container/hello"
         }
       })
-      deletion_protection = optional(bool, true)
-      ingress             = optional(string, "INGRESS_TRAFFIC_INTERNAL_ONLY")
-      max_instance_count  = optional(number, 3)
-      service_invokers    = optional(list(string), [])
-      vpc_access_egress   = optional(string, "ALL_TRAFFIC")
-      vpc_access_tags     = optional(list(string), [])
+      ingress            = optional(string, "INGRESS_TRAFFIC_INTERNAL_ONLY")
+      max_instance_count = optional(number, 3)
+      service_invokers   = optional(list(string), [])
+      vpc_access_egress  = optional(string, "ALL_TRAFFIC")
+      vpc_access_tags    = optional(list(string), [])
     })
   })
   nullable = false
