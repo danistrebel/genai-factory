@@ -19,7 +19,7 @@ terraform apply
 
 ## I have not used 0-projects
 
-The [0-projects](../0-projects) module also produces the Terraform input files needed for this stage to work. If you are not leveraging [0-projects](../0-projects) it's your responsibility to create the `terraform.tfvars` file needed by this module.
+The [0-projects](../0-projects) module also produces the Terraform input files needed for this stage to work. If you are not leveraging [0-projects](../0-projects) it's your responsibility to create the `terraform.tfvars` file, reflecting what's requested by [variables.tf](./variables.tf) in this module.
 
 <!-- BEGIN TFDOC -->
 ## Variables

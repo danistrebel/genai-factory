@@ -18,6 +18,8 @@ terraform init
 terraform apply
 ```
 
+You should now see the `providers.tf` and `terraform.auto.tfvars` files in the [1-apps folder](../1-apps/README.md). Enter the [1-apps folder](../1-apps/README.md) to proceed with the deployment.
+
 ## Use existing projects
 
 The `project_config` variable allows to configure for different scenarios regarding project creation and management, as described in the [main README](../../README.md).
