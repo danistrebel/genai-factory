@@ -87,10 +87,10 @@ project_config = {
 
 ### Create and control projects outside genai-factory
 
-You can create and control projects outside genai-factory.
+You can leverage existing projects, setup outside genai-factory.
 Genai-factory will only deploy resources and applications within these projects.
 
-To do so, make sure your `terraform.tfvars` contains this configuration:
+To do so, make sure your factory [0-projects](#0-projects) `terraform.tfvars` contains this configuration:
 
 ```hcl
 project_config = {
@@ -101,12 +101,13 @@ project_config = {
 
 You'll need to configure your projects as expected by the [1-apps](#1-apps) module of each factory.
 On the other hand, you will need to configure the `terraform.tfvars` of [1-apps](#1-apps) with all the values expected (by default automatically populated by [0-projects](#0-projects)).
+
 If your platform team doesn't use [FAST project factory](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/master/fast/stages/2-project-factory), they can read the requirements from the yaml files defining each project in the data folder under each `0-project` module.
 
 # Networking Configuration
 
-By default, `1-apps` modules create VPCs and other networking components if these are needed by the infrastructure and applications.
-These include VPCs, subnets, routes, DNS zones, private Google access, and more.
+By default, `1-apps` modules create VPCs and other networking components if these are needed by the factory infrastructure and applications.
+These include VPCs, subnets, routes, DNS zones, Private Google Access (PGA), and more.
 
 You also have the option to leverage existing VPCs. In this case, it will be your responsibility to create everything needed by the application to work.
 
@@ -115,8 +116,10 @@ To do so, make sure your `terraform.tfvars` in [1-apps](#1-apps) contains this c
 ```hcl
 networking_config = {
   create    = false
-  subnet_id = "YOUR_SUBNET_ID"
-  vpc_id    = "YOUR_VPC_ID"
+  vpc_id    = "your-vpc-id"
+  subnet = {
+    name = "your-subnet-id"
+  }
 }
 ```
 

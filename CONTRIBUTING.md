@@ -13,6 +13,12 @@ We will review your pull request and provide feedback as soon as possible.
 
 Thank you for your contributions!
 
+## Diagrams
+
+We draw factory diagrams leveraging Google Slides.
+You can find the diagrams file [here](https://docs.google.com/presentation/d/1I7-OQ60DD__MtfdUtw_bPkiRADN7NEmVKCl1OxfzTNA). The deck is private and you will need to request access.
+When drawing new diagrams you can leverage the [official Google Cloud Icons deck](https://docs.google.com/presentation/d/1fD1AwQo4E9Un6012zyPEb7NvUAGlzF6L-vo5DbUe4NQ).
+
 ## Useful Commands
 
 Setup dev environment
