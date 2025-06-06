@@ -2,7 +2,7 @@
 
 The module deploys a Cloud Run instance that communicates with Gemini APIs.
 
-![Architecture Diagram](diagram.png)
+![Architecture Diagram](./diagram.png)
 
 ## Core Components
 
