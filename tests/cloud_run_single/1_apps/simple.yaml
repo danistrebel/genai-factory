@@ -860,7 +860,7 @@ values:
       capacity_scaler: 1
       custom_metrics: []
       description: Terraform managed.
-      preference: 'DEFAULT'
+      preference: ''
     circuit_breakers: []
     compression_mode: null
     connection_draining_timeout_sec: 300
