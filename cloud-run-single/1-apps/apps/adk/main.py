@@ -13,13 +13,21 @@
 # limitations under the License.
 
 import os
+import sys
 
-PROJECT_ID = os.environ.get("PROJECT_ID")
-REGION = os.environ.get("REGION", "europe-west1")
+import uvicorn
+from google.adk.cli.fast_api import get_fast_api_app
 
-MODEL_NAME = os.environ.get("MODEL_NAME", "gemini-2.0-flash")
-TEMPERATURE = 0.9
-TOP_P = 1.0
-TOP_K = 32
-CANDIDATE_COUNT = 1
-MAX_OUTPUT_TOKENS = 8192
+from src import config
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+app = get_fast_api_app(
+    agents_dir=config.AGENT_DIR,
+    session_service_uri=config.SESSION_DB_URL,
+    allow_origins=config.ALLOWED_ORIGINS,
+    web=config.SERVE_WEB_INTERFACE,
+)
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
