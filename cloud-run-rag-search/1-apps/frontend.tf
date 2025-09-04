@@ -13,7 +13,7 @@
 # limitations under the License.
 
 module "cloud_run_frontend" {
-  source              = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/cloud-run-v2"
+  source              = "github.com/GoogleCloudPlatform/cloud-foundation-fabric//modules/cloud-run-v2?ref=v42.0.0"
   project_id          = var.project_config.id
   name                = "${var.name}-frontend"
   region              = var.region
