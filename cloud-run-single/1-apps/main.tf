@@ -32,6 +32,8 @@ module "cloud_run" {
       subnet  = local.subnet_id
       tags    = var.cloud_run_configs.vpc_access_tags
     }
+    gpu_zonal_redundancy_disabled = var.cloud_run_configs.gpu_zonal_redundancy_disabled
+    node_selector                 = var.cloud_run_configs.node_selector
   }
   service_config = {
     gen2_execution_environment = true

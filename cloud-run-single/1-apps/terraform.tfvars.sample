@@ -3,3 +3,28 @@ lbs_config = {
     domain = "your-domain.com"
   }
 }
+
+## Uncomment config below for GPU Workloads
+# cloud_run_configs = {
+#   containers = {
+#     gemma = {
+#       image = "us-docker.pkg.dev/cloudrun/container/hello"
+#       resources = {
+#         limits = {
+#           cpu              = "4"
+#           memory           = "16Gi"
+#           "nvidia.com/gpu" = "1"
+#         }
+#       }
+#     }
+#   }
+#   ingress                       = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
+#   max_instance_count            = 3
+#   service_invokers              = []
+#   vpc_access_egress             = "ALL_TRAFFIC"
+#   vpc_access_tags               = []
+#   gpu_zonal_redundancy_disabled = true
+#   node_selector = {
+#     accelerator = "nvidia-l4"
+#   }
+# }
