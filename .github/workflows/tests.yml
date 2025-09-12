@@ -14,18 +14,16 @@
 
 name: "Tests"
 on:
-  push:
-    branches:
-      - master
   pull_request:
     branches:
       - master
-  schedule:
-    - cron: '0 3 * * *'
+  push:
+    branches:
+      - master
   workflow_dispatch:
     inputs:
       terraform_version:
-        description: "Use '1.5.7' to test last MPLv2 Terraform version"
+        description: "Use Terraform 11.4"
         required: true
         default: 1.11.4
         type: string
@@ -105,7 +103,7 @@ jobs:
           overwrite: true
           include-hidden-files: true
 
-  modules:
+  tests:
     runs-on: ubuntu-latest
     needs:
       - setup-tf-providers
@@ -130,7 +128,7 @@ jobs:
           TERRAFORM_VERSION: ${{ matrix.version }}
           TERRAFORM_FLAVOUR: ${{ matrix.flavour }}
 
-      - name: Run tests modules
+      - name: Run tests
         env:
           TERRAFORM: ${{ matrix.flavour }}
         run: uv run pytest -vv ${{ matrix.flavour == 'terraform' && '-n4' || '-n4' }} --tb=line --junit-xml=test-results-raw.xml tests
@@ -138,5 +136,3 @@ jobs:
       - name: Create report
         uses: ./.github/actions/gen-test-report
         if: always()
-        with:
-          MODULE: Modules
